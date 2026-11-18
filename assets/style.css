@@ -1,0 +1,44 @@
+<?php
+require 'includes/init.php';
+$error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $nama  = trim($_POST['nama'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $no_hp = trim($_POST['no_hp'] ?? '');
+    $pass  = $_POST['password'] ?? '';
+
+    if ($nama === '' || $email === '' || $pass === '') {
+        $error = 'Nama, email, dan password wajib diisi.';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = 'Format email tidak valid.';
+    } elseif (strlen($pass) < 6) {
+        $error = 'Password minimal 6 karakter.';
+    } else {
+        $cek = $pdo->prepare('SELECT id FROM users WHERE email = ?');
+        $cek->execute([$email]);
+        if ($cek->fetch()) {
+            $error = 'Email sudah terdaftar.';
+        } else {
+            $ins = $pdo->prepare(
+                'INSERT INTO users (nama, email, no_hp, password_hash, role)
+                 VALUES (?, ?, ?, ?, "user")'
+            );
+            $ins->execute([$nama, $email, $no_hp, password_hash($pass, PASSWORD_DEFAULT)]);
+            header('Location: login.php?daftar=sukses');
+            exit;
+        }
+    }
+}
+?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Daftar | Padel Booking</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-card">
