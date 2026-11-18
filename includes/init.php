@@ -27,7 +27,6 @@ function wajib_login() {
     }
 }
 
-// Pakai di atas tiap halaman: wajib_role('user') atau wajib_role('admin')
 function wajib_role($role) {
     wajib_login();
     if ($_SESSION['user']['role'] !== $role) {

@@ -1,44 +1,121 @@
-<?php
-require 'includes/init.php';
-$error = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nama  = trim($_POST['nama'] ?? '');
-    $email = trim($_POST['email'] ?? '');
-    $no_hp = trim($_POST['no_hp'] ?? '');
-    $pass  = $_POST['password'] ?? '';
-
-    if ($nama === '' || $email === '' || $pass === '') {
-        $error = 'Nama, email, dan password wajib diisi.';
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error = 'Format email tidak valid.';
-    } elseif (strlen($pass) < 6) {
-        $error = 'Password minimal 6 karakter.';
-    } else {
-        $cek = $pdo->prepare('SELECT id FROM users WHERE email = ?');
-        $cek->execute([$email]);
-        if ($cek->fetch()) {
-            $error = 'Email sudah terdaftar.';
-        } else {
-            $ins = $pdo->prepare(
-                'INSERT INTO users (nama, email, no_hp, password_hash, role)
-                 VALUES (?, ?, ?, ?, "user")'
-            );
-            $ins->execute([$nama, $email, $no_hp, password_hash($pass, PASSWORD_DEFAULT)]);
-            header('Location: login.php?daftar=sukses');
-            exit;
-        }
-    }
+:root {
+  --hijau: #0f766e;
+  --hijau-gelap: #115e59;
+  --hijau-muda: #ccfbf1;
+  --teks: #1f2937;
+  --abu: #6b7280;
+  --garis: #e5e7eb;
+  --bg: #f3f4f6;
+  --merah: #dc2626;
 }
-?>
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Daftar | Padel Booking</title>
-  <link rel="stylesheet" href="assets/css/style.css">
-</head>
-<body>
-<div class="auth-wrap">
-  <div class="auth-card">
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  background: var(--bg);
+  color: var(--teks);
+  line-height: 1.5;
+}
+
+a { color: var(--hijau); text-decoration: none; font-weight: 600; }
+a:hover { text-decoration: underline; }
+
+/* Login / register */
+.auth-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(135deg, var(--hijau-gelap), var(--hijau) 60%, #14b8a6);
+}
+.auth-card {
+  background: #fff;
+  width: 100%;
+  max-width: 400px;
+  padding: 32px 28px;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, .2);
+}
+.auth-card .logo { font-size: 40px; text-align: center; }
+.auth-card h1 { text-align: center; font-size: 22px; margin: 4px 0; }
+.auth-card .sub { text-align: center; color: var(--abu); font-size: 14px; margin-bottom: 22px; }
+.auth-card .bawah { text-align: center; margin-top: 18px; font-size: 14px; color: var(--abu); }
+
+/* Form */
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; }
+input, select, textarea {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--garis);
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: inherit;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--hijau);
+  box-shadow: 0 0 0 3px var(--hijau-muda);
+}
+
+/* Tombol */
+.btn {
+  display: inline-block;
+  width: 100%;
+  padding: 12px;
+  background: var(--hijau);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+}
+.btn:hover { background: var(--hijau-gelap); text-decoration: none; }
+.btn-kecil { width: auto; padding: 8px 14px; font-size: 13px; }
+.btn-merah { background: var(--merah); }
+.btn-abu { background: var(--abu); }
+
+/* Notifikasi */
+.alert { padding: 10px 14px; border-radius: 8px; font-size: 14px; margin-bottom: 14px; }
+.alert-error { background: #fee2e2; color: #991b1b; }
+.alert-sukses { background: #dcfce7; color: #166534; }
+
+/* Navbar + layout */
+.navbar {
+  background: var(--hijau);
+  color: #fff;
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.navbar .brand { font-weight: 700; font-size: 18px; }
+.navbar a { color: #fff; margin-left: 16px; font-weight: 500; }
+
+.container { max-width: 1000px; margin: 24px auto; padding: 0 16px; }
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .08);
+}
+.card h2 { font-size: 18px; margin-bottom: 14px; }
+
+/* Tabel */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { background: var(--hijau-muda); text-align: left; }
+th, td { padding: 10px 12px; border-bottom: 1px solid var(--garis); }
+
+/* Badge status */
+.badge { padding: 3px 10px; border-radius: 99px; font-size: 12px; font-weight: 600; }
+.badge-pending { background: #fef3c7; color: #92400e; }
+.badge-paid { background: #dcfce7; color: #166534; }
+.badge-cancelled, .badge-expired { background: #fee2e2; color: #991b1b; }
+.badge-completed { background: #e0e7ff; color: #3730a3; }
