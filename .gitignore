@@ -1,0 +1,7 @@
+config.php
+.env
+uploads/*
+!uploads/.gitkeep
+.DS_Store
+.vscode/
+vendor/
